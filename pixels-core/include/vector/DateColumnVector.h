@@ -30,6 +30,7 @@ public:
 
     /*lab 2 by dhl*/
     void add(int value) override;
+	void add(std::string &value) override;
 };
 
 #endif // DUCKDB_DATECOLUMNVECTOR_H

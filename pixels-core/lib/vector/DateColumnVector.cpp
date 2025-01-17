@@ -69,3 +69,7 @@ void DateColumnVector::add(int value){
 	dates[index]=value;
     isNull[index] = false;
 }
+void DateColumnVector::add(std::string &value){
+	
+	return;
+}

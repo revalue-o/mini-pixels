@@ -105,5 +105,9 @@ void ColumnVector::add(int value) {
     throw new std::runtime_error("Adding int is not supported");
 }
 
+/*lab2*/
+// void ColumnVector::add(long value){
+//     throw new std::runtime_error("Adding long is not supported");
+// }
 
 

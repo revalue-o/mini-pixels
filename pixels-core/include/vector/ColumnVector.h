@@ -79,7 +79,7 @@ public:
     virtual void add(int value);
 
     /*lab2*/
-    virtual void add(long value);
+    // virtual void add(long value);
 };
 
 #endif //PIXELS_COLUMNVECTOR_H
