@@ -60,6 +60,7 @@ bool PixelsWriterImpl::addRowBatch(std::shared_ptr<VectorizedRowBatch> rowBatch)
     std::cout << "PixelsWriterImpl::addRowBatch" << std::endl;
     curRowGroupDataLength=0;
     curRowGroupNumOfRows+=rowBatch->count();
+    printf("PixelsWriterImpl::addRowBatch: %d\n", rowBatch->count());
     writeColumnVectors(rowBatch->cols,rowBatch->count());
 
     if(curRowGroupDataLength>=rowGroupSize){
@@ -75,11 +76,20 @@ void PixelsWriterImpl::writeColumnVectors(std::vector<std::shared_ptr<ColumnVect
     std::vector<std::future<void>> futures;
     std::atomic<int> dataLength(0);
     int commonColumnLength = columnVectors.size() ;
-
+    printf("commonColumnLength: %d\n", commonColumnLength);
     // Writing regular columns
     for (int i = 0; i < commonColumnLength; ++i) {
        // dataLength += columnWriters[i]->write(columnVectors[i], rowBatchSize);
+       if (columnWriters[i] == nullptr ) {
+    throw std::runtime_error("Null pointer detected at columnWriters index " + std::to_string(i));
+       }
+    if(columnVectors[i] == nullptr ) {
+    throw std::runtime_error("Null pointer detected at columnVectors index " + std::to_string(i));
+    }
+
+
        futures.emplace_back(std::async(std::launch::async, [this, columnVectors, rowBatchSize, i, &dataLength]() {
+        printf("PixelsWriterImpl::writeColumnVectors: %d, start try-catch box, rowBatchsize=%d\n", i,rowBatchSize);
            try {
                dataLength += columnWriters[i]->write(columnVectors[i], rowBatchSize);
            } catch (const std::exception& e) {
@@ -88,12 +98,12 @@ void PixelsWriterImpl::writeColumnVectors(std::vector<std::shared_ptr<ColumnVect
        }));
     }
 
-
+    printf("PixelsWriterImpl::writeColumnVectors:end of loop, rowBatchsize=%d\n", rowBatchSize);
     // Wait for all futures to complete
     for (auto& future : futures) {
         future.get();  // Blocking until all tasks are completed
     }
-
+    printf("PixelsWriterImpl::writeColumnVectors: end for function, rowBatchsize=%d\n", rowBatchSize);
     // Simulate curRowGroupDataLength accumulation
     curRowGroupDataLength += dataLength.load();
     std::cout << "Data length written: " << curRowGroupDataLength << std::endl;

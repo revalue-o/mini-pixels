@@ -26,6 +26,9 @@ public:
 
     /*lab2*/
     void add(long value) override;
+    void add(std::string &value) override;
+    void ensureSize(uint64_t size, bool preserveData) override;
+    long dateToTimestamp(std::string &date); 
 private:
     bool isLong;
 };

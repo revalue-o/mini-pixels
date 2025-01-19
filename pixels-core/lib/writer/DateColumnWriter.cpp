@@ -20,6 +20,7 @@
 #include <utils/ConfigFactory.h>
 #include "utils/BitUtils.h"
 #include "writer/DateColumnWriter.h"
+#include "utils/EncodingUtils.h"
 DateColumnWriter::DateColumnWriter(std::shared_ptr<TypeDescription> type, std::shared_ptr<PixelsWriterOption> writerOption)
     : ColumnWriter(type, writerOption),
       runlengthEncoding(false),
@@ -31,11 +32,18 @@ DateColumnWriter::DateColumnWriter(std::shared_ptr<TypeDescription> type, std::s
 }
 
 int DateColumnWriter::write(std::shared_ptr<ColumnVector> vector, int length) {
+    printf("DateColumnWriter::write\n");
     auto columnVector = std::static_pointer_cast<DateColumnVector>(vector);
-    long* values = columnVector->dates;
-    bool littleEndian = this->byteOrder == ByteOrder::LITTLE_ENDIAN;
+    int* values = columnVector->dates;
+    bool littleEndian = this->byteOrder == ByteOrder::PIXELS_LITTLE_ENDIAN;
+    auto encoder = EncodingUtils();
     
     for (int i = 0; i < length; i++) {
+        if (i == 0)
+        {
+            printf("start for loop, DateColumnWriter::write: %d\n", values[i]);
+        }
+        
         isNull[curPixelIsNullIndex++] = columnVector->isNull[i];
         curPixelEleIndex++;
 
@@ -45,15 +53,17 @@ int DateColumnWriter::write(std::shared_ptr<ColumnVector> vector, int length) {
 
             if (nullsPadding) {
                 // For nulls, we pad with zeros
-                EncodingUtils::writeLongLE(outputStream, 0L);
+                encoder.writeLongLE(outputStream, 0L);
             }
         } else {
             if (littleEndian) {
-                EncodingUtils::writeLongLE(outputStream, values[i]);
+                encoder.writeIntLE(outputStream, values[i]+1);//+1代表算1970-1-1
+                // encoder.writeLongLE(outputStream, values[(i<<1)+1]);
             } else {
-                EncodingUtils::writeLongBE(outputStream, values[i]);
+                encoder.writeIntBE(outputStream, values[i]+1);
+                // encoder.writeLongBE(outputStream, values[(i<<1)+1]);
             }
-            pixelStatRecorder.updateInteger128(values[i], 0, 1);
+            // pixelStatRecorder.updateInteger128(values[i], 0, 1);
         }
 
         // If current pixel size satisfies the pixel stride, end the current pixel and start a new one
@@ -62,7 +72,7 @@ int DateColumnWriter::write(std::shared_ptr<ColumnVector> vector, int length) {
         }
     }
 
-    return outputStream.size();
+    return outputStream->getWritePos();
 }
 
 void DateColumnWriter::close() {
@@ -76,21 +86,21 @@ void DateColumnWriter::newPixel() {
     curPixelEleIndex = 0;
 }
 
-void DateColumnWriter::writeCurPartTime(std::shared_ptr<ColumnVector> columnVector, long* values, int curPartLength, int curPartOffset) {
-    // 处理当前时间的写入
-    for (int i = 0; i < curPartLength; i++) {
-        // 在这里添加逻辑来处理特定的部分时间写入
-    }
-}
+// void DateColumnWriter::writeCurPartTime(std::shared_ptr<ColumnVector> columnVector, long* values, int curPartLength, int curPartOffset) {
+//     // 处理当前时间的写入
+//     for (int i = 0; i < curPartLength; i++) {
+//         // 在这里添加逻辑来处理特定的部分时间写入
+//     }
+// }
 
 bool DateColumnWriter::decideNullsPadding(std::shared_ptr<PixelsWriterOption> writerOption) {
     return writerOption->isNullsPadding();
 }
 
-pixels::proto::ColumnEncoding DateColumnWriter::getColumnChunkEncoding() const {
-    // 返回列的编码方式
-    return runlengthEncoding ? pixels::proto::ColumnEncoding::RLE : pixels::proto::ColumnEncoding::PLAIN;
-}
+// pixels::proto::ColumnEncoding DateColumnWriter::getColumnChunkEncoding() const {
+//     // 返回列的编码方式
+//     return runlengthEncoding ? pixels::proto::ColumnEncoding::RLE : pixels::proto::ColumnEncoding::PLAIN;
+// }
 
 
 

@@ -59,7 +59,7 @@ void PixelsConsumer::run() {
 
 //    int pixelsStride = std::stoi(ConfigFactory::Instance().getProperty("pixel.stride"));
 //    int rowGroupSize = std::stoi(ConfigFactory::Instance().getProperty("row.group.size"));
-//    int64_t blockSize = std::stoll(ConfigFactory::Instance().getProperty("block.size"));
+//    int64_t blockSize = std::stoll(ConfigFactory::Instance().getProperty("block.size"));  newColumnWriter
     int pixelsStride = 2;
     int rowGroupSize = 100;
     int64_t blockSize = 1024;
@@ -117,6 +117,7 @@ void PixelsConsumer::run() {
                     if (i > colsInLine.size() || colsInLine[i].empty() || colsInLine[i] == "\\N") {
                         columnVectors[i]->addNull();
                     } else {
+                        printf("PixelsConsumer.cpp:120 add value: %s\n", colsInLine[i].c_str());
                         columnVectors[i]->add(colsInLine[i]);
                     }
                 }

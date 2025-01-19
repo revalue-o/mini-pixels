@@ -380,6 +380,7 @@ bool PixelsRecordReaderImpl::read() {
         Scheduler * scheduler = SchedulerFactory::Instance()->getScheduler();
 		std::vector<uint32_t> colIds;
 		std::vector<uint64_t> bytes;
+        printf("PixelsRecordReaderImpl.cpp::383, diskChunks.size(): %d\n", diskChunks.size());
         for(int i = 0; i < diskChunks.size(); i++) {
             ChunkId chunk = diskChunks.at(i);
             requestBatch.add(queryId, chunk.offset, (int)chunk.length, ::BufferPool::GetBufferId(i));
@@ -393,12 +394,13 @@ bool PixelsRecordReaderImpl::read() {
             auto colId = colIds.at(i);
 			originalByteBuffers.emplace_back(::BufferPool::GetBuffer(colId));
 		}
-
+        printf("PixelsRecordReaderImpl.cpp::398\n");
 		auto byteBuffers = scheduler->executeBatch(physicalReader, requestBatch, originalByteBuffers, queryId);
 
       if(ConfigFactory::Instance().boolCheckProperty("localfs.enable.async.io") && originalByteBuffers.size() > 0) {
         has_async_task_num_ += diskChunks.size();
       }
+      printf("PixelsRecordReaderImpl.cpp::404\n");
         for(int index = 0; index < diskChunks.size(); index++) {
             ChunkId chunk = diskChunks.at(index);
             std::shared_ptr<ByteBuffer> bb = byteBuffers.at(index);

@@ -24,6 +24,9 @@
 //#include "writer/ColumnWriterBuilder.h"
 #include "writer/ColumnWriterBuilder.h"
 #include "writer/IntegerColumnWriter.h"
+#include "writer/DecimalColumnWriter.h"
+#include "writer/DateColumnWriter.h"
+#include "writer/TimestampColumnWriter.h"
 
 std::shared_ptr<ColumnWriter> ColumnWriterBuilder::newColumnWriter(std::shared_ptr<TypeDescription> type, std::shared_ptr<PixelsWriterOption> writerOption) {
     switch(type->getCategory()) {
@@ -49,6 +52,19 @@ std::shared_ptr<ColumnWriter> ColumnWriterBuilder::newColumnWriter(std::shared_p
         case TypeDescription::BINARY:
             break;
         case TypeDescription::STRUCT:
+            break;
+        
+        /*lab2*/
+        case TypeDescription::DECIMAL:
+            return std::make_shared<DecimalColumnWriter>(type, writerOption);
+            break;
+        case TypeDescription::DATE:
+            return std::make_shared<DateColumnWriter>(type, writerOption);
+            break;
+        case TypeDescription::TIMESTAMP:
+            return std::make_shared<TimestampColumnWriter>(type, writerOption);
+            break;
+        case TypeDescription::VARCHAR:
             break;
         default:
             throw InvalidArgumentException("bad column type in ColumnWriterBuilder: " + std::to_string(type->getCategory()));

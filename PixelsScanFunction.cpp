@@ -34,8 +34,11 @@ static unique_ptr<NodeStatistics> PixelsCardinality(ClientContext &context, cons
 }
 
 TableFunctionSet PixelsScanFunction::GetFunctionSet() {
+    // printf("PixelsScanFunction::GetFunctionSet start\n");
     TableFunction table_function("pixels_scan", {LogicalType::VARCHAR}, PixelsScanImplementation, PixelsScanBind,
 	                             PixelsScanInitGlobal, PixelsScanInitLocal);
+    // printf("PixelsScanFunction::GetFunctionSet end \n");
+    //不是上面那行的問題
 	table_function.projection_pushdown = true;
 //	table_function.filter_pushdown = true;
     //table_function.filter_prune = true;
@@ -151,6 +154,12 @@ unique_ptr<FunctionData> PixelsScanFunction::PixelsScanBind(
 	                                 ->setStorage(storage)
 	                                 ->setPixelsFooterCache(footerCache)
 	                                 ->build();
+    try{
+    printf("reader build complete, PixelsScanFunction::PixelsScanBind: %s\n", files.at(0).c_str());
+    }
+    catch (const std::exception& e) {
+        printf("reader build failed, PixelsScanFunction::PixelsScanBind: %s\n", e.what());
+    }
 	std::shared_ptr<TypeDescription> fileSchema = pixelsReader->getFileSchema();
 	TransformDuckdbType(fileSchema, return_types);
 	names = fileSchema->getFieldNames();
@@ -448,11 +457,13 @@ bool PixelsScanFunction::PixelsParallelStateNext(ClientContext &context, const P
         PixelsReaderOption option = GetPixelsReaderOption(scan_data, parallel_state);
         scan_data.nextPixelsRecordReader = scan_data.nextReader->read(option);
         auto nextPixelsRecordReader = std::static_pointer_cast<PixelsRecordReaderImpl>(scan_data.nextPixelsRecordReader);
+        printf("PixelsParallelStateNext: %s\n", scan_data.next_file_name.c_str());
         nextPixelsRecordReader->read();
     } else {
         scan_data.nextReader = nullptr;
         scan_data.nextPixelsRecordReader = nullptr;
     }
+    printf("read complete\n");
     return true;
 }
 

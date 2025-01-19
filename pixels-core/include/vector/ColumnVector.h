@@ -80,7 +80,7 @@ public:
 
 
     /*lab2*/
-    virtual void add(long value);
+    // virtual void add(long value);
 
     int getLength() {
      return length;

@@ -87,9 +87,12 @@ std::shared_ptr<PixelsReader> PixelsReaderBuilder::build() {
 	builderSchema = TypeDescription::createSchema(fileColTypes);
 
     // TODO: the remaining things, such as builderSchema, coreCOnfig, metric
+    printf("fileColTypes.size(): %d, starting createSchema\n", fileColTypes.size());
 
-	return std::make_shared<PixelsReaderImpl>(builderSchema, fsReader, fileTail,
+	auto temp=std::make_shared<PixelsReaderImpl>(builderSchema, fsReader, fileTail,
 	                                         builderPixelsFooterCache);
+    printf("PixelsReaderImpl created, temp:%p\n",temp);
+    return temp;
 }
 
 

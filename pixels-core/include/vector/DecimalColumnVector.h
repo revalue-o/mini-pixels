@@ -29,6 +29,8 @@ public:
 
     /*lab 2*/
     void add(long value) override;//应该是long？
+    void add(std::string &value) override;
+    void ensureSize(uint64_t size, bool preserveData) override;
 };
 
 #endif //PIXELS_DECIMALCOLUMNVECTOR_H

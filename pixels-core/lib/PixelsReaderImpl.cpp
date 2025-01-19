@@ -8,12 +8,14 @@ PixelsReaderImpl::PixelsReaderImpl(std::shared_ptr<TypeDescription> fileSchema,
                                    std::shared_ptr<PhysicalReader> reader,
                                    std::shared_ptr<pixels::proto::FileTail> fileTail,
                                    std::shared_ptr<PixelsFooterCache> footerCache) {
+	printf("PixelsReaderImpl::PixelsReaderImpl\n");		
 	this->fileSchema = fileSchema;
 	this->physicalReader = reader;
 	this->footer = fileTail->footer();
 	this->postScript = fileTail->postscript();
 	this->pixelsFooterCache = footerCache;
 	this->closed = false;
+	printf("PixelsReaderImpl::PixelsReaderImpl end\n");
 }
 
 
